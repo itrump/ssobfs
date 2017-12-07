@@ -409,11 +409,11 @@ class TCPRelayHandler(object):
         self._update_activity(len(data))
         if not is_local:
             # get from client -> decrypt -> send to remote 
-            logging.info('get client data[%s]' % data[:180])
+            logging.debug('get client data[%s]' % data[:180])
             before_len = len(data)
             data = deobfs_request(data)
             after_len = len(data)
-            logging.info('before deobfs len[%s] after[%s]' % (before_len, after_len))
+            logging.debug('before deobfs len[%s] after[%s]' % (before_len, after_len))
             data = self._encryptor.decrypt(data)
             if not data:
                 return
@@ -451,13 +451,13 @@ class TCPRelayHandler(object):
             data = self._encryptor.decrypt(data)
         else:
             # get from remote -> encrypt -> send to local
-            logging.info('get remote data[%s] total len[%s]' \
+            logging.debug('get remote data[%s] total len[%s]' \
                     % (data[:100],len(data)))
             data = self._encryptor.encrypt(data)
             if not self._response_obfs_done:
                 data = obfs_response(data)
                 self._response_obfs_done = True
-            logging.info('after obfs total len[%s]', len(data))
+            logging.debug('after obfs total len[%s]', len(data))
         try:
             self._write_to_sock(data, self._local_sock)
         except Exception as e:
@@ -473,9 +473,6 @@ class TCPRelayHandler(object):
             data = b''.join(self._data_to_write_to_local)
             self._data_to_write_to_local = []
             logging.debug("begin write to local")
-            if not self._is_local:
-                #data = obfs_response(data)
-                pass
             self._write_to_sock(data, self._local_sock)
         else:
             self._update_stream(STREAM_DOWN, WAIT_STATUS_READING)

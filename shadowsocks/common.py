@@ -22,6 +22,7 @@ import socket
 import struct
 import logging
 
+# TODO random
 obfs_response_template = "HTTP/1.1 101 Switching Protocols\r\n" + \
                          "Server: nginx/1.0.1\r\n" + \
                          "Date: Thu, 07 Dec 2017 12:19:11 GMT\r\n" + \
@@ -147,14 +148,14 @@ def pack_addr(address):
 
 def deobfs_request(data):
     dlen = len(data)
-    logging.warn('enter deobfs data len:%s' % dlen)
+    logging.debug('enter deobfs data len:%s' % dlen)
     if dlen <= 4:
-        logging.warn('get invalid obfs header[%s]' % data)
+        logging.debug('get invalid obfs header[%s]' % data)
         return data
     if data[:3] != 'GET':
         logging.debug("header 3 bit[%s] not GET, skip", data[:3])
         return data
-    logging.warn('begin deobfs data')
+    logging.debug('begin deobfs data')
     idx = 0
     new_data = ''
     while idx < dlen - 4:
@@ -163,7 +164,7 @@ def deobfs_request(data):
             new_data = data[idx + 4:]
             break
         idx += 1
-    logging.warn('after deobfs data len:%s' % len(new_data))
+    logging.debug('after deobfs data len:%s' % len(new_data))
     return new_data
 
 def obfs_response(data):
