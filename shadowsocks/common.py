@@ -178,7 +178,7 @@ def obfs_response(data):
     return new_data
 
 def parse_header(data):
-    logging.info("begin to parse header[%s]" % data[:20])
+    logging.debug("begin to parse header[%s]" % data[:20])
     addrtype = ord(data[0])
     dest_addr = None
     dest_port = None
