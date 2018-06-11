@@ -21,6 +21,7 @@ from __future__ import absolute_import, division, print_function, \
 import socket
 import struct
 import logging
+import binascii
 
 # TODO random
 obfs_response_template = "HTTP/1.1 101 Switching Protocols\r\n" + \
@@ -146,6 +147,30 @@ def pack_addr(address):
         address = address[:255]  # TODO
     return b'\x03' + chr(len(address)) + address
 
+def get_header_data(data):
+    lines = data.split('\r\n')
+    if len(lines) < 1:
+        logging.warn("data[%s] error!", data)
+        return ''
+    if lines[0][:3] != 'GET':
+        logging.warn("first 3 char [%s] not GET", lines[0][:3])
+        return ''
+    hdata = ''
+    hex_arr = lines[0].split('%')
+    logging.debug('get hex arr %s', hex_arr)
+    if hex_arr and len(hex_arr) > 1:
+        for idx in range(1, len(hex_arr)):
+            hex_str = hex_arr[idx]
+            if len(hex_str) < 2:
+                hdata += binascii.unhexlify('0' + hex_str)
+                break
+            elif len(hex_str) > 2:
+                hdata += binascii.unhexlify(hex_str[:2])
+                break
+            else:
+                hdata += binascii.unhexlify(hex_str)
+    return hdata
+
 def deobfs_request(data):
     dlen = len(data)
     logging.debug('enter deobfs data len:%s' % dlen)
@@ -158,6 +183,8 @@ def deobfs_request(data):
     logging.debug('begin deobfs data')
     idx = 0
     new_data = ''
+    # compatible with ssr origin/http_simple obfs
+    header_data = get_header_data(data)
     while idx < dlen - 4:
         if data[idx] == '\r' and data[idx + 1] == '\n' \
             and data[idx + 2] == '\r' and data[idx + 3] == '\n':
@@ -165,7 +192,7 @@ def deobfs_request(data):
             break
         idx += 1
     logging.debug('after deobfs data len:%s' % len(new_data))
-    return new_data
+    return header_data + new_data
 
 def obfs_response(data):
     dlen = len(data)
