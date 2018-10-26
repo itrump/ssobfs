@@ -3,7 +3,8 @@ shadowsocks
 Forked from [shadowsocks](https://github.com/shadowsocks/shadowsocks), and modified to enable ssserver obfs.
 
 # TODO
-- [ ] add fail over
+- [v] add fail over
+- [ ] udp obfs
 - [ ] add sslocal obfs support
 
 # License
