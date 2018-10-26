@@ -32,12 +32,14 @@ obfs_response_template = "HTTP/1.1 101 Switching Protocols\r\n" + \
                          "Sec-WebSocket-Accept: HSmrc0sMlYUkAGmm5OPpG2HaGWk=\r\n" + \
                          "\r\n"
 
+html_text_when_error = "redirecting..."
 header_when_error = "HTTP/1.1 302\r\n" + \
 "Cache-Control: private\r\n" + \
 "Content-Type: text/html; charset=utf-8\r\n" + \
 "Vary: Accept-Encoding\r\n" + \
+"Content-Length: %s\r\n" % (len(html_text_when_error)) + \
 "Location: https://cn.bing.com/\r\n" + \
-"\r\nredirecting..."
+"\r\n%s" % (html_text_when_error)
 
 def compat_ord(s):
     if type(s) == int:
