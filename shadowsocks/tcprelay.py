@@ -293,6 +293,9 @@ class TCPRelayHandler(object):
                     return
             header_result = parse_header(data)
             if header_result is None:
+                # anti active detect
+                self._write_to_sock(common.header_when_error, self._local_sock)
+                logging.info('parse header error, response with fake redirect header.')
                 raise Exception('can not parse header')
             addrtype, remote_addr, remote_port, header_length = header_result
             logging.info('connecting %s:%d from %s:%d' %
@@ -409,13 +412,16 @@ class TCPRelayHandler(object):
         self._update_activity(len(data))
         if not is_local:
             # get from client -> decrypt -> send to remote 
-            logging.debug('get client data[%s]' % data[:180])
+            logging.debug('stage:%s, get client data[%s]' % \
+                    (self._stage, data[:180]))
             before_len = len(data)
             data = deobfs_request(data)
             after_len = len(data)
             logging.debug('before deobfs len[%s] after[%s]' % (before_len, after_len))
             data = self._encryptor.decrypt(data)
             if not data:
+                self._write_to_sock(common.header_when_error, self._local_sock)
+                logging.info("after decrypt, no data, fake 302 to client.")
                 return
         if self._stage == STAGE_STREAM:
             if self._is_local:
